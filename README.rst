@@ -8,9 +8,13 @@ Installation
 
 Install the package via ``pip``:
 
+::
+
     pip install sentry-jira
 
 Add ``sentry-jira`` to your ``INSTALLED_APPS`` in your ``sentry.conf.py``:
+
+::
 
     from sentry.conf.server import *
 
