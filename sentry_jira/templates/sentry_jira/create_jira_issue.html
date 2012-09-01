@@ -22,16 +22,53 @@
 </div>
 {% endblock %}
 
-{% block content_after %}
+{% block meta %}
     {{ block.super }}
+    <script type="text/javascript" src="{% url sentry-media "sentry_jira" "select2/select2.js" %}"></script>
     <script type="text/javascript">
         $(document).ready(function(){
+            // bind regular selects and multiselects to use select2
+            $("#jira_issue_form").find("select").select2({"width": "460px"});
+
+            // user autocompletion!
+            $("#jira_issue_form").find("input.user-selector").each(function(i, el){
+                var $el = $(el);
+                $el.select2({
+                    placeholder: "Select a User",
+                    minimumInputLength: 0,
+                    quietMillis: 100,
+                    allowClear: true,
+                    width: "460px",
+                    ajax: {
+                        url: "?user_autocomplete=" + encodeURIComponent($el.attr('data-autocomplete')),
+                        dataType: 'json',
+                        data: function(q, page) { return { q: q }; },
+                        results: function(data, page) { return { results: data.users } }
+                    },
+                    formatResult: function renderServerUser(user) {
+                        if (user.needsRender) {
+                            var q = user.q;
+                            return user.display.replace(new RegExp(q,"gi"), "<b>" + q + "</b>");
+                        } else {
+                            return $("<div/>").html(user.display).text().replace(/&nbsp;/g, " ");
+                        }
+                    },
+                    formatSelection: function(user) { return user.value; },
+                    id: function    (user) { return user.value; },
+                    initSelection : function (element, callback) {
+                        var val = $(element).val();
+                        callback({'value': val});
+
+                    }
+                });
+            });
+
+            // refresh the page with updated form based on issue type.
             $("#id_issuetype").on("change", function(){
-                // refresh the page with updated form based on issue type.
                 $("#changing_issuetype").val("1");
                 $("#jira_issue_form").submit();
             });
         });
     </script>
-
+    <link type="text/css" href="{% url sentry-media "sentry_jira" "select2/select2.css" %}" rel="stylesheet" />
 {% endblock %}

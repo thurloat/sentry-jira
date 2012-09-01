@@ -9,22 +9,28 @@ log = logging.getLogger(__name__)
 class JIRAOptionsForm(forms.Form):
     instance_url = forms.CharField(
         label=_("JIRA Instance URL"),
-        widget=forms.TextInput(attrs={'class': 'span3', 'placeholder': 'e.g. https://jira.atlassian.com'}),
-        help_text=_("Enter your JIRA Instance URI, it must be visible to the sentry server.")
+        widget=forms.TextInput(attrs={'class': 'span6', 'placeholder': 'e.g. "https://jira.atlassian.com"'}),
+        help_text=_("It must be visible to the Sentry server")
     )
     username = forms.CharField(
         label=_("Username"),
-        widget=forms.TextInput(attrs={'class': 'span3'}),
-        help_text=_("Make sure to use a user who has access to create issues on the project.")
+        widget=forms.TextInput(attrs={'class': 'span6'}),
+        help_text=_("Ensure the JIRA user has admin perm. on the project")
     )
     password = forms.CharField(
         label=_("Password"),
-        widget=forms.PasswordInput(attrs={'class': 'span3'}),
-        help_text=_("Only enter a value if you wish to change it."),
+        widget=forms.PasswordInput(attrs={'class': 'span6'}),
+        help_text=_("Only enter a value if you wish to change it"),
         required=False
     )
     default_project = forms.ChoiceField(
         label=_("Linked Project"),
+    )
+    ignored_fields = forms.CharField(
+        label=_("Ignored Fields"),
+        widget=forms.Textarea(attrs={'class': 'span11', 'placeholder': 'e.g. "components, security, customfield_10006"'}),
+        help_text=_("Comma-separated list of properties that you don't want to show in the form"),
+        required=False
     )
 
     def __init__(self, *args, **kwargs):
@@ -45,6 +51,7 @@ class JIRAOptionsForm(forms.Form):
 
         if not project_safe:
             del self.fields["default_project"]
+            del self.fields["ignored_fields"]
 
     def clean_password(self):
         """
@@ -93,15 +100,18 @@ class JIRAIssueForm(forms.Form):
     )
 
     summary = forms.CharField(
-        label="Issue Summary",
+        label=_("Issue Summary"),
         widget=forms.TextInput(attrs={'class': 'span6'})
     )
     description = forms.CharField(
         widget=forms.Textarea(attrs={"class": 'span6'})
     )
-    fixVersions = forms.MultipleChoiceField()
+    fixVersions = forms.MultipleChoiceField(
+        label=_("Fix Version/s")
+    )
 
     def __init__(self, *args, **kwargs):
+        ignored_fields = kwargs.pop("ignored_fields")
         initial = kwargs.get("initial")
         jira_client = initial.pop("jira_client")
 
@@ -140,7 +150,7 @@ class JIRAIssueForm(forms.Form):
         dynamic_fields.sort(key=lambda f: anti_gravity.get(f) or 0)
         # build up some dynamic fields based on required shit.
         for field in dynamic_fields:
-            if field in self.fields.keys():
+            if field in self.fields.keys() or field in [x.strip() for x in ignored_fields.split(",")]:
                 # don't overwrite the fixed fields for the form.
                 continue
             mb_field = self.build_dynamic_field(self.issue_type["fields"][field])
@@ -183,9 +193,10 @@ class JIRAIssueForm(forms.Form):
                         v = {"name": v}
                     elif schema["type"] == "array" and schema.get("item") != "string":
                         v = [{"id": vx} for vx in v]
+                    elif schema.get("custom") == "com.atlassian.jira.plugin.system.customfieldtypes:textarea":
+                        v = v
                     elif schema.get("item") != "string":
                         v = {"id": v}
-
                     very_clean[field] = v
                 else:
                     # We don't want to pass blank data back to the API, so kill
@@ -218,7 +229,7 @@ class JIRAIssueForm(forms.Form):
             fkwargs["widget"] = forms.Select()
         elif schema.get("items") == "user" or schema["type"] == "user":
             # TODO: Implement user autocompletes.
-            fkwargs["widget"] = forms.TextInput(attrs={'placeholder': 'type username exactly', 'class': 'span6'})
+            fkwargs["widget"] = forms.TextInput(attrs={'class': 'user-selector', 'data-autocomplete': field_meta.get("autoCompleteUrl")})
         elif schema["type"] in ["timetracking"]:
             # TODO: Implement timetracking (currently unsupported alltogether)
             return None

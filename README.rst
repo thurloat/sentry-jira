@@ -19,6 +19,10 @@ with specialized configurations. Provide your feedback here: https://github.com/
 Visual Walkthrough
 ------------------
 
+Per-Project configurations
+
+.. image:: http://sentry-jira.s3.amazonaws.com/ss4.png
+
 When viewing a Sentry event, the Actions dropdown now contains a "Create JIRA Issue" button.
 
 .. image:: http://sentry-jira.s3.amazonaws.com/ss1.jpg

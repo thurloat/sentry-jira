@@ -1,0 +1,45 @@
+{% load i18n crispy_forms_filters %}
+
+{% if plugin_description %}
+    {{ plugin_description|linebreaks }}
+{% endif %}
+
+<div class="row-fluid">
+    <div class="span8">
+        {% if request.GET.success %}
+            <div class="alert alert-success">
+                {% trans "Changes to your project were saved successfully." %}
+                <a class="close" data-dismiss="alert" href="javascript:void(0)">&times;</a>
+            </div>
+        {% endif %}
+        <form class="form-horizontal" action="" method="post" id="jira_issue_form">
+            {% csrf_token %}
+            {{ form|crispy }}
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">{% trans "Create JIRA Issue" %}</button>
+            </div>
+        </form>
+    </div>
+    <div class="span4">
+        <div class="sidebar well">
+            <h6>Configuration Help</h6>
+            <ul class="nav nav-tabs nav-stacked">
+                <li><a href="https://github.com/thurloat/sentry-jira">Documentation</a></li>
+                <li><a href="https://raw.github.com/thurloat/sentry-jira/master/README.rst">README</a></li>
+            </ul>
+            <h6>Project Information</h6>
+            <ul class="nav nav-tabs nav-stacked">
+                <li><a href="http://github.com/thurloat/sentry-jira">Source</a></li>
+                <li><a href="https://github.com/thurloat/sentry-jira/issues">Bug Tracker</a></li>
+            </ul>
+        </div>
+    </div>
+</div>
+
+<link type="text/css" href="{% url sentry-media "sentry_jira" "select2/select2.css" %}" rel="stylesheet" />
+<script type="text/javascript" src="{% url sentry-media "sentry_jira" "select2/select2.js" %}"></script>
+<script type="text/javascript">
+    $(document).ready(function(){
+        $("#id_jira-default_project").select2({"width": "220px"});
+    });
+</script>

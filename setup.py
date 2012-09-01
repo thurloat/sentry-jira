@@ -2,7 +2,7 @@
 from setuptools import setup, find_packages
 
 install_requires = [
-    'sentry>=4.6.0',
+    'sentry>=4.10.0',
 ]
 
 f = open('README.rst')
@@ -11,7 +11,7 @@ f.close()
 
 setup(
     name='sentry-jira',
-    version='0.2.1',
+    version='0.5',
     author='Adam Thurlow',
     author_email='thurloat@gmail.com',
     url='http://github.com/thurloat/sentry-jira',
