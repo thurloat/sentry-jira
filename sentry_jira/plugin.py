@@ -23,7 +23,7 @@ class JIRAPlugin(IssuePlugin):
 
     slug = "jira"
     title = _("JIRA")
-    cont_title = title
+    conf_title = title
     conf_key = slug
     project_conf_form = JIRAOptionsForm
     project_conf_template = "sentry_jira/project_conf_form.html"
