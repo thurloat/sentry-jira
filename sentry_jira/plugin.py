@@ -65,8 +65,9 @@ class JIRAPlugin(IssuePlugin):
 
     def create_issue(self, request, group, form_data, **kwargs):
         """
-        Since this is called wrapped in a try/catch on ValidationError to display
-        an end user error, that's what I'll throw when JIRA doesn't like it.
+        Form validation errors recognized server-side raise ValidationErrors,
+        but when validation errors occur in JIRA they are simply attached to
+        the form.
         """
         jira_client = self.get_jira_client(group.project)
         issue_response = jira_client.create_issue(form_data)
@@ -136,17 +137,13 @@ class JIRAPlugin(IssuePlugin):
         if request.POST and request.POST.get("changing_issuetype") == "0":
         ########################################################################
             if form.is_valid():
-                try:
-                    issue_id, error = self.create_issue(
-                        group=group,
-                        form_data=form.cleaned_data,
-                        request=request,
-                    )
-                    if error:
-                        form.errors.update(error)
-
-                except forms.ValidationError, e:
-                    form.errors['__all__'] = [u'Error creating issue: %s' % e]
+                issue_id, error = self.create_issue(
+                    group=group,
+                    form_data=form.cleaned_data,
+                    request=request,
+                )
+                if error:
+                    form.errors.update(error)
 
             if form.is_valid():
                 GroupMeta.objects.set_value(group, '%s:tid' % prefix, issue_id)
