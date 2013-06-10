@@ -2,9 +2,10 @@ import logging
 from django.core.exceptions import ValidationError
 from django.utils.translation import ugettext_lazy as _
 from django import forms
-from jira import JIRAClient
+from .jira import JIRAClient
 
 log = logging.getLogger(__name__)
+
 
 class JIRAOptionsForm(forms.Form):
     instance_url = forms.CharField(
@@ -75,9 +76,9 @@ class JIRAOptionsForm(forms.Form):
         """
         url = self.cleaned_data.get("instance_url")
         if url and url[-1:] == "/":
-          return url[:-1]
+            return url[:-1]
         else:
-          return url
+            return url
 
     def clean(self):
         """
@@ -115,9 +116,10 @@ class JIRAOptionsForm(forms.Form):
 # A list of common builtin custom field types for JIRA for easy reference.
 CUSTOM_FIELD_TYPES = {
     "select": "com.atlassian.jira.plugin.system.customfieldtypes:select",
-    "textarea": "com.atlassian.jira.plugin.system.customfieldtypes:textarea", 
+    "textarea": "com.atlassian.jira.plugin.system.customfieldtypes:textarea",
     "multiuserpicker": "com.atlassian.jira.plugin.system.customfieldtypes:multiuserpicker"
 }
+
 
 class JIRAIssueForm(forms.Form):
 
@@ -195,7 +197,7 @@ class JIRAIssueForm(forms.Form):
         anti_gravity = {"priority": -150,
                         "fixVersions": -125,
                         "components": -100,
-                        "security": -50 }
+                        "security": -50}
 
         dynamic_fields = self.issue_type.get("fields").keys()
         dynamic_fields.sort(key=lambda f: anti_gravity.get(f) or 0)
@@ -217,7 +219,7 @@ class JIRAIssueForm(forms.Form):
         if "fixVersions" in self.fields.keys():
             self.fields["fixVersions"].choices = self.make_choices(versions)
 
-    make_choices = lambda self, x: [(y["id"], y["name"] if y.has_key("name") else y["value"] ) for y in x] if x else []
+    make_choices = lambda self, x: [(y["id"], y["name"] if "name" in y else y["value"]) for y in x] if x else []
 
     def clean_description(self):
         """
@@ -237,7 +239,7 @@ class JIRAIssueForm(forms.Form):
         # protect against mis-configured plugin submitting a form without an
         # issuetype assigned.
         if not very_clean.get("issuetype"):
-          raise ValidationError("Issue Type is required. Check your plugin configuration.")
+            raise ValidationError("Issue Type is required. Check your plugin configuration.")
 
         fs = self.issue_type["fields"]
         for field in fs.keys():
@@ -249,7 +251,7 @@ class JIRAIssueForm(forms.Form):
                 if v:
                     schema = f["schema"]
                     if schema.get("type") == "string" and not schema.get("custom") == CUSTOM_FIELD_TYPES["select"]:
-                      continue # noop
+                        continue  # noop
                     if schema["type"] == "user" or schema.get('item') == "user":
                         v = {"name": v}
                     elif schema.get("custom") == CUSTOM_FIELD_TYPES.get("multiuserpicker"):
@@ -259,9 +261,9 @@ class JIRAIssueForm(forms.Form):
                         v = [{"id": vx} for vx in v]
                     elif schema.get("custom") == CUSTOM_FIELD_TYPES.get("textarea"):
                         v = v
-                    elif schema.get("type") != "string"\
-                      or schema.get("item") != "string"\
-                      or schema.get("custom") == CUSTOM_FIELD_TYPES.get("select"):
+                    elif (schema.get("type") != "string"
+                            or schema.get("item") != "string"
+                            or schema.get("custom") == CUSTOM_FIELD_TYPES.get("select")):
                         v = {"id": v}
                     very_clean[field] = v
                 else:
@@ -282,7 +284,6 @@ class JIRAIssueForm(forms.Form):
 
         return very_clean
 
-
     def build_dynamic_field(self, field_meta):
         """
         Builds a field based on JIRA's meta field information
@@ -297,8 +298,8 @@ class JIRAIssueForm(forms.Form):
         }
 
         # override defaults based on field configuration
-        if schema["type"] in ["securitylevel", "priority"] \
-          or schema.get("custom") == CUSTOM_FIELD_TYPES.get("select"):
+        if (schema["type"] in ["securitylevel", "priority"]
+                or schema.get("custom") == CUSTOM_FIELD_TYPES.get("select")):
             fieldtype = forms.ChoiceField
             fkwargs["choices"] = self.make_choices(field_meta.get('allowedValues'))
             fkwargs["widget"] = forms.Select()

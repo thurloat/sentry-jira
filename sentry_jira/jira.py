@@ -10,6 +10,7 @@ log = logging.getLogger(__name__)
 
 CACHE_KEY = "SENTRY-JIRA-%s-%s"
 
+
 class JIRAClient(object):
     """
     The JIRA API Client, so you don't have to.
@@ -83,7 +84,7 @@ class JIRAResponse(object):
         self.xml = None
         try:
             self.json = json.loads(response_text, object_pairs_hook=SortedDict)
-        except JSONDecodeError, e:
+        except (JSONDecodeError, ValueError):
             if self.text[:5] == "<?xml":
                 # perhaps it's XML?
                 self.xml = BeautifulStoneSoup(self.text)
