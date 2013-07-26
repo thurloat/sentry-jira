@@ -54,9 +54,11 @@ class JIRAClient(object):
             proxies = {}
             if 'http_proxy' in os.environ:
                 proxies['http'] = os.environ['http_proxy']
+                logging.info('Using http proxy: %s' % proxies['http'])
 
             if 'https_proxy' in os.environ:
                 proxies['https'] = os.environ['https_proxy']
+                logging.info('Using https proxy: %s' % proxies['https'])
 
             if method is 'get':
                 r = requests.get(url, params=payload, auth=auth, headers=headers, verify=False, proxies=proxies)
