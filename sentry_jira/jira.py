@@ -1,5 +1,6 @@
 import logging
 import requests
+import os
 from sentry.utils import json
 from sentry.utils.cache import cache
 from simplejson.decoder import JSONDecodeError
@@ -49,10 +50,18 @@ class JIRAClient(object):
         auth = self.username, self.password
         headers = {'content-type': 'application/json'}
         try:
+            # take http_proxy and https_proxy into play
+            proxies = {}
+            if 'http_proxy' in os.environ:
+                proxies['http'] = os.environ['http_proxy']
+
+            if 'https_proxy' in os.environ:
+                proxies['https'] = os.environ['https_proxy']
+
             if method is 'get':
-                r = requests.get(url, params=payload, auth=auth, headers=headers, verify=False)
+                r = requests.get(url, params=payload, auth=auth, headers=headers, verify=False, proxies=proxies)
             else:
-                r = requests.post(url, data=json.dumps(payload), auth=auth, headers=headers, verify=False)
+                r = requests.post(url, data=json.dumps(payload), auth=auth, headers=headers, verify=False, proxies=proxies)
             return JIRAResponse(r.text, r.status_code)
         except Exception, e:
             logging.error('Error in request to %s: %s' % (url, e.message))
