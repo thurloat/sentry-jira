@@ -1,10 +1,10 @@
 import urllib
 import urlparse
 
+from django.conf import settings
 from django.core.urlresolvers import reverse
 from django.http import HttpResponse
 from django.utils.translation import ugettext_lazy as _
-from sentry.conf import settings
 from sentry.models import GroupMeta
 from sentry.plugins.base import Response
 from sentry.plugins.bases.issue import IssuePlugin
