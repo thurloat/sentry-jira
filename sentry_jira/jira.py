@@ -49,7 +49,7 @@ class JIRAClient(object):
         auth = self.username, self.password
         headers = {'content-type': 'application/json'}
         try:
-            if method is 'get':
+            if method == 'get':
                 r = requests.get(url, params=payload, auth=auth, headers=headers, verify=False)
             else:
                 r = requests.post(url, data=json.dumps(payload), auth=auth, headers=headers, verify=False)
