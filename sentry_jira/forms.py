@@ -142,15 +142,16 @@ class JIRAIssueForm(forms.Form):
     def __init__(self, *args, **kwargs):
         self.ignored_fields = kwargs.pop("ignored_fields")
         initial = kwargs.get("initial")
-        jira_client = initial.pop("jira_client")
+        jira_client = kwargs.pop("jira_client")
+        project_key = kwargs.pop("project_key")
 
         priorities = jira_client.get_priorities().json
-        versions = jira_client.get_versions(initial.get("project_key")).json
+        versions = jira_client.get_versions(project_key).json
 
         # Returns the metadata the configured JIRA instance requires for
-        # creating issues for a given project. 
+        # creating issues for a given project.
         # https://developer.atlassian.com/static/rest/jira/5.0.html#id200251
-        meta = jira_client.get_create_meta(initial.get("project_key")).json
+        meta = jira_client.get_create_meta(project_key).json
 
         # Early exit, somehow made it here without properly configuring the
         # plugin.
@@ -279,8 +280,6 @@ class JIRAIssueForm(forms.Form):
             # in the projectmeta API call, and would normally be converted in the
             # above clean method.)
             very_clean["issuetype"] = {"id": very_clean["issuetype"]}
-
-        very_clean.pop("project_key", None)
 
         return very_clean
 
