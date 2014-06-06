@@ -53,9 +53,6 @@ class JIRAPlugin(IssuePlugin):
         initial = {
             'summary': self._get_group_title(request, group, event),
             'description': self._get_group_description(request, group, event),
-            'project_key': self.get_option('default_project', group.project),
-            'issuetype': request.POST.get('issuetype'),
-            'jira_client': self.get_jira_client(group.project)
         }
 
         return initial
@@ -72,7 +69,7 @@ class JIRAPlugin(IssuePlugin):
         jira_client = self.get_jira_client(group.project)
         issue_response = jira_client.create_issue(form_data)
 
-        if issue_response.status_code in [200, 201]: # weirdly inconsistent.
+        if issue_response.status_code in [200, 201]:  # weirdly inconsistent.
             return issue_response.json.get("key"), None
         else:
             # return some sort of error.
@@ -81,7 +78,7 @@ class JIRAPlugin(IssuePlugin):
                 errdict["__all__"] = "JIRA Internal Server Error."
             elif issue_response.status_code == 400:
                 for k in issue_response.json["errors"].keys():
-                    errdict[k] = [issue_response.json["errors"][k],]
+                    errdict[k] = [issue_response.json["errors"][k], ]
                 errdict["__all__"] = issue_response.json["errorMessages"]
             else:
                 errdict["__all__"] = "Something went wrong, Sounds like a configuration issue: code %s" % issue_response.status_code
@@ -109,13 +106,13 @@ class JIRAPlugin(IssuePlugin):
                 'title': self.get_title(),
                 'project': group.project,
                 'has_auth_configured': has_auth_configured,
-                'required_auth_settings': required_auth_settings,
+                'required_auth_settings': required_auth_settings
                 })
 
         if self.needs_auth(project=group.project, request=request):
             return self.render(self.needs_auth_template, {
                 'title': self.get_title(),
-                'project': group.project,
+                'project': group.project
                 })
 
         if GroupMeta.objects.get_value(group, '%s:tid' % self.get_conf_key(), None):
@@ -134,6 +131,8 @@ class JIRAPlugin(IssuePlugin):
         form = self.new_issue_form(
             request.POST or None,
             initial=self.get_initial_form_data(request, group, event),
+            jira_client=self.get_jira_client(group.project),
+            project_key=self.get_option('default_project', group.project),
             ignored_fields=self.get_option("ignored_fields", group.project))
         #######################################################################
         # to allow the form to be submitted, but ignored so that dynamic fields
@@ -172,8 +171,8 @@ class JIRAPlugin(IssuePlugin):
 
         context = {
             'form': form,
-            'title': self.get_new_issue_title(),
-            }
+            'title': self.get_new_issue_title()
+        }
 
         return self.render(self.create_issue_template, context)
 
@@ -225,6 +224,7 @@ class JIRAPlugin(IssuePlugin):
                 })
 
         return JSONResponse({'users': users})
+
 
 class JSONResponse(Response):
     """
