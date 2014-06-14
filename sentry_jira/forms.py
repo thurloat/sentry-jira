@@ -154,7 +154,6 @@ CUSTOM_FIELD_TYPES = {
 
 class JIRAIssueForm(forms.Form):
 
-    project_key = forms.CharField(widget=forms.HiddenInput())
     project = forms.CharField(widget=forms.HiddenInput())
     issuetype = forms.ChoiceField(
         label="Issue Type",
