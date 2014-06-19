@@ -258,7 +258,7 @@ class JIRAPlugin(IssuePlugin):
 
         auto_create = self.get_option('auto_create', group.project)
 
-        if auto_create:
+        if auto_create and is_new:
             return True
 
     def post_process(self, group, event, is_new, is_sample, **kwargs):
