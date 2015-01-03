@@ -253,7 +253,9 @@ class JIRAPlugin(IssuePlugin):
 
     def should_create(self, group, event, is_new):
 
-        if GroupMeta.objects.get_value(group, '%s:tid' % self.get_conf_key(), None):
+        GroupMeta.objects.populate_cache([group])  # temporary workaround
+
+        if GroupMeta.objects.get(group, '%s:tid' % self.get_conf_key(), None):
             return False
 
         auto_create = self.get_option('auto_create', group.project)
