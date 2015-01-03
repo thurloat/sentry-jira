@@ -13,7 +13,7 @@ f.close()
 
 setup(
     name='sentry-jira',
-    version='0.8.3',
+    version='0.8.4',
     author='Adam Thurlow',
     author_email='thurloat@gmail.com',
     url='http://github.com/thurloat/sentry-jira',
