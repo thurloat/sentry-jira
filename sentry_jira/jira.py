@@ -41,6 +41,9 @@ class JIRAClient(object):
 
         metas = response.json
 
+        if not metas:
+            return
+
         if len(metas["projects"]) > 1:
             raise Exception("More than one project found")
 
