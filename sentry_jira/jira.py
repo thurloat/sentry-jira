@@ -37,6 +37,24 @@ class JIRAClient(object):
     def get_create_meta(self, project):
         return self.make_request('get', self.META_URL, {'projectKeys': project, 'expand': 'projects.issuetypes.fields'})
 
+    def get_create_meta_for_project(self, project):
+        response = self.get_create_meta(project)
+
+        if not response:
+            raise Exception("Could not find project")
+
+        metas = response.json
+
+        if not metas:
+            return
+
+        if len(metas["projects"]) > 1:
+            raise Exception("More than one project found")
+
+        if len(metas["projects"]) == 1:
+            meta = metas["projects"][0]
+            return meta
+
     def get_versions(self, project):
         return self.get_cached(self.VERSIONS_URL % project)
 
