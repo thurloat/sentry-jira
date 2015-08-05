@@ -252,6 +252,8 @@ class JIRAIssueForm(forms.Form):
                     schema = f["schema"]
                     if schema.get("type") == "string" and not schema.get("custom") == CUSTOM_FIELD_TYPES["select"]:
                         continue  # noop
+                    if schema.get("type") == "date":
+                        continue
                     if schema["type"] == "user" or schema.get('item') == "user":
                         v = {"name": v}
                     elif schema.get("custom") == CUSTOM_FIELD_TYPES.get("multiuserpicker"):
