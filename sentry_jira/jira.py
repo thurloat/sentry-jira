@@ -80,6 +80,7 @@ class JIRAClient(object):
     The JIRA API Client, so you don't have to.
     """
 
+    AUTH_URL = '/rest/auth/1/session'
     PROJECT_URL = '/rest/api/2/project'
     META_URL = '/rest/api/2/issue/createmeta'
     CREATE_URL = '/rest/api/2/issue'
@@ -133,20 +134,40 @@ class JIRAClient(object):
     def get_issue(self, key):
         return self.make_request('get', self.ISSUE_URL % key)
 
+    def get_session(self):
+        """
+        If a session does not yet exist, build a session and authenticate
+        with Jira; otherwise, reuse session
+        """
+        if not hasattr(self, '_session'):
+            self._session = build_session()
+            url = self.instance_url + self.AUTH_URL
+            res = self._session.post(self.instance_url + self.AUTH_URL,
+                                     json=dict(username=self.username,
+                                               password=self.password))
+            if not res:
+                if res.status_code == 401:
+                    raise JIRAUnauthorized.from_response(res)
+                elif res.status_code >= 500:
+                    logging.error('Error in request to %s: %s', url,
+                                  res, exc_info=True)
+                    raise JIRAError('Internal Error')
+                raise JIRAError.from_response(res)
+        return self._session
+
     def make_request(self, method, url, payload=None):
         if url[:4] != "http":
             url = self.instance_url + url
-        auth = self.username, self.password
-        session = build_session()
         try:
+            session = self.get_session()
             if method == 'get':
                 r = session.get(
-                    url, params=payload, auth=auth,
-                    verify=False, timeout=self.HTTP_TIMEOUT)
+                    url, params=payload, verify=False,
+                    timeout=self.HTTP_TIMEOUT)
             else:
                 r = session.post(
-                    url, json=payload, auth=auth,
-                    verify=False, timeout=self.HTTP_TIMEOUT)
+                    url, json=payload, verify=False,
+                    timeout=self.HTTP_TIMEOUT)
         except ConnectionError as e:
             raise JIRAError(unicode(e))
         except RequestException as e:
