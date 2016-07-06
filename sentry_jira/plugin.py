@@ -247,12 +247,12 @@ class JIRAPlugin(IssuePlugin):
 
         if "/rest/api/latest/user/" in url:  # its the JSON version of the autocompleter
             isXML = False
-            query["username"] = q
+            query["username"] = q.encode('utf8')
             query.pop('issueKey', False)  # some reason JIRA complains if this key is in the URL.
-            query["project"] = project
+            query["project"] = project.encode('utf8')
         else:  # its the stupid XML version of the API.
             isXML = True
-            query["query"] = q
+            query["query"] = q.encode('utf8')
             if query.get('fieldName'):
                 query["fieldName"] = query["fieldName"][0]  # for some reason its a list.
 
