@@ -342,7 +342,7 @@ class JIRAPlugin(IssuePlugin):
         project = meta["projects"][0]
 
         post_data = {
-            'project': {'id': project},
+            'project': {'id': project['id']},
             'summary': initial['summary'],
             'description': initial['description'],
         }
