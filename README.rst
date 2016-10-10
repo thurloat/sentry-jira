@@ -1,6 +1,8 @@
 sentry-jira
 ===========
 
+**DEPRECATED:** This project now lives in `sentry-plugins <https://github.com/getsentry/sentry-plugins>`_
+
 A flexible extension for Sentry which allows you to create issues in JIRA based on sentry events.
 It is capable of rendering and saving many custom fields, and will display the proper fields depending on
 which issue type you are trying to create.
